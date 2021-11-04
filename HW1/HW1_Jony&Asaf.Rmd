@@ -1,0 +1,66 @@
+---
+title: "Statistics of Big Data - Homework 1"
+author: "Asaf Madar - 205770605\nJonatan Bobrutsky - 308318047"
+date: "`r format(Sys.time(), '%d %b, %Y')`"
+output: pdf_document
+---
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+## Question 1
+
+  (a) Each $\Lambda _i = x_i\log(ca_i)+(1-x_i)\log(1-ca_i)-x_i\log(co_i)-(1-x_i)\log(1-co_i)$ is iid...
+
+  (b)
+```{r, cache=TRUE}
+p <- 0.5
+q <- 1E5
+n <- 1000
+
+case    <- matrix(rbinom(n*q, 1, p),n,q)
+control <- matrix(rbinom(n*q, 1, p),n,q)
+neither <- matrix(rbinom(n*q, 1, p),n,q)
+
+ca <- apply(case,2,mean)
+co <- apply(control,2,mean)
+
+LLR <- function(x){
+  x*log(ca) + (1-x)*log(1-ca) - x*log(co) - (1-x)*log(1-co)
+}
+
+LLR.case    <- replicate(10, LLR(case[sample(n, 1),]))
+LLR.control <- replicate(10, LLR(control[sample(n, 1),]))
+LLR.neither <- replicate(10, LLR(neither[sample(n, 1),]))
+
+tibble(`case` = c(LLR.case),
+       `control` = c(LLR.control),
+       `neither` = c(LLR.neither)) %>% 
+  gather("x.group","LLR") %>% group_by(x.group) %>% 
+  summarise("mean" = mean(LLR), "variance"=var(LLR), .groups = 'drop') %>%
+  knitr::kable()
+```
+
+
+  (c) Using the law of total expectation:
+$$E[\Lambda_i] = E[\Lambda_i|x_i=1]P(x_i=1)+E[\Lambda_i|x_i=0]P(x_i=0) = \frac{1}{2}E[\Lambda_i|x_i=1] +\frac{1}{2}E[\Lambda_i|x_i=0]$$
+Such that, 
+
+$$E[\Lambda_i|x \in neither]=\frac{1}{2}\Big\{E[\log(Bin(n,p)/n)]-E[\log(Bin(n,p)/n)]\Big\} + \frac{1}{2}\Big\{E[\log(1-Bin(n,p)/n)]-E[\log(1-Bin(n,p)/n)]\Big\} = 0$$
+
+$$E[\Lambda_i|x \in case]=\frac{1}{2}\Big\{E[\log(\frac{1}{n}+Bin(n-1,p)/n]-E[\log(Bin(n,p)/n]\Big\} + \frac{1}{2}\Big\{E[\log(1-\frac{1}{n}-Bin(n-1,p)/n]-E[\log(1-Bin(n,p)/n]\Big\} = \\ \frac{1}{2}\Big\{E[\log(1+Bin(n-1,p)]-E[\log(Bin(n,p)]\Big\} + \frac{1}{2}\Big\{E[\log(1-\frac{1}{n}-Bin(n-1,p)/n]-E[\log(1-Bin(n,p)/n]\Big\} \approx \\
+\frac{1}{2}\Big\{\log(1+(n-1)p)-\log(np)\Big\} - \frac{1}{2}\Big\{\log(n-1-(n-1)p)-\log(n-np)\Big\} 
+$$
+  (d)
+
+## Question 2
+
+  (a)
+
+  (b)
+
+  (c)
+
+  (d)
+
+  (e)
